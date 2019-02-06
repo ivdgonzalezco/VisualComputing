@@ -33,12 +33,16 @@ int flockHeight = 720;
 int flockDepth = 600;
 boolean avoidWalls = true;
 
-int initBoidNum = 2; // amount of boids to start the program with
+int initBoidNum = 10; // amount of boids to start the program with
 ArrayList<Boid> flock;
 Frame avatar;
 boolean animate = true;
 
 Interpolator interpolator;
+
+ArrayList<Vector> points;
+
+int curveMode = 2;
 
 void setup() {
   size(1000, 800, P3D);
@@ -68,6 +72,17 @@ void draw() {
   scene.traverse();
   // uncomment to asynchronously update boid avatar. See mouseClicked()
   // updateAvatar(scene.trackedFrame("mouseClicked"));
+ 
+   points = new ArrayList<Vector>();
+  
+  for(Frame frame : interpolator.keyFrames()){
+    points.add(frame.position());
+  }
+ 
+  setPoints(points);
+ 
+  hermite();
+  //bezier();
 }
 
 void walls() {
@@ -182,5 +197,84 @@ void keyPressed() {
     else if (avatar != null)
       thirdPerson();
     break;
+   case '1':
+    curveMode = 1;
+    break;
+   case '2':
+     curveMode = 0;
   }
+  
+ 
+}
+  
+  public void setPoints(ArrayList<Vector> points){
+    stroke(213,11,11);
+    this.points = points;
+  }
+  
+  public int factorial(int n){
+    int factorial = 1;
+    while ( n!=0) {
+      factorial=factorial*n;
+      n--;
+    }
+    return factorial;
+  }
+  
+  public float combinatorial(int n,int i){
+    return factorial(n)/(factorial(i) * factorial(n-i));
+  }
+  
+  public float bernstein(float t, int n, int i){
+    return combinatorial(n,i)*pow(t,i)*pow(1-t,n-i);
+  }
+  
+  public void bezier(){
+    int n = points.size();
+    Vector aux = null;
+    Vector current_point = points.get(0);
+    
+    for(float t=0; t<=1; t+=0.01){
+      aux = new Vector(0, 0, 0);
+      for (int i=0; i<n; i++){
+        aux.add(Vector.multiply(points.get(i),  bernstein(t,n,i)));
+      }
+      line(current_point.x(),current_point.y(),current_point.z(),aux.x(),aux.y(),aux.z());
+      current_point = aux;
+    }
+  }
+  
+  private Vector tangent_point(int i) {
+    return Vector.multiply( Vector.subtract( points.get(i+1), points.get(i-1) ), 0.5 );
+  }
+  
+  public void hermite(){
+  int n = points.size();
+  Vector aux = null;
+  Vector punto_actual = points.get(0);
+  for (int i=1; i<n-2;i++){
+    Vector P0 = points.get(i);
+    Vector P1 = points.get(i+1);
+
+    punto_actual = P0;
+    Vector m0= tangent_point(i);
+    Vector m1= tangent_point(i+1); 
+
+    for(float t=0; t<=1; t+=0.01){  
+      
+      float h00 = 2*pow(t,3)-3*pow(t,2)+1;
+      float h10 = pow(t,3)-2*pow(t,2)+t;
+      float h01 = -2*pow(t,3)+3*pow(t,2);
+      float h11 = pow(t,3)-pow(t,2);
+
+      Vector aux1 = Vector.add(Vector.multiply(P0, h00),Vector.multiply(m0, h10));
+      Vector aux2 = Vector.add(Vector.multiply(P1, h01),Vector.multiply(m1, h11));
+      aux = Vector.add(aux1, aux2);
+      
+      line(punto_actual.x(),punto_actual.y(),punto_actual.z(),aux.x(),aux.y(),aux.z());
+      punto_actual = aux;
+      }  
+        
+      line(punto_actual.x(),punto_actual.y(),punto_actual.z(),P1.x(),P1.y(),P1.z());
+    }
 }

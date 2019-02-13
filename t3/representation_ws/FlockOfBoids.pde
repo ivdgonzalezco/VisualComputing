@@ -33,7 +33,7 @@ int flockHeight = 720;
 int flockDepth = 600;
 boolean avoidWalls = true;
 
-int initBoidNum = 10; // amount of boids to start the program with
+int initBoidNum = 40; // amount of boids to start the program with
 ArrayList<Boid> flock;
 Frame avatar;
 boolean animate = true;
@@ -81,8 +81,8 @@ void draw() {
  
   setPoints(points);
  
-  hermite();
-  //bezier();
+  //hermite();
+  bezier(7);
 }
 
 void walls() {
@@ -207,66 +207,137 @@ void keyPressed() {
  
 }
   
-  public void setPoints(ArrayList<Vector> points){
-    stroke(213,11,11);
-    this.points = points;
-  }
+public void setPoints(ArrayList<Vector> points){
+  stroke(213,11,11);
+  this.points = points;
+}
   
-  public int factorial(int n){
-    int factorial = 1;
-    while ( n!=0) {
-      factorial=factorial*n;
-      n--;
+float bez3(float u, int k){
+  if(k == 0){
+    return (float) Math.pow( (1 - u), 3);
+  }
+  if(k == 1){
+    return (float) (3 * u * Math.pow( (1 - u), 2) );
+  }
+  if(k == 2){
+    return  (float) (3 * Math.pow(u, 2) * (1 - u) );
+  }
+  if(k == 3){
+    return (float) Math.pow( u, 3);
+  } 
+  return 0;
+}
+
+float bez7(float u, int k){
+  if(k == 0){
+    return (float) Math.pow( (1 - u), 7);
+  }
+  if(k == 1){
+    return (float) (7 * u * Math.pow( (1 - u), 6) );
+  }
+  if(k == 2){
+    return  (float) (21 * Math.pow(u, 2) * Math.pow( (1 - u), 5) );
+  }
+  if(k == 3){
+    return  (float) (35 * Math.pow(u, 3) * Math.pow( (1 - u), 4) );
+  }
+  if(k == 4){
+    return  (float) (35 * Math.pow(u, 4) * Math.pow( (1 - u), 3) );
+  }
+  if(k == 5){
+    return  (float) (21 * Math.pow(u, 5) * Math.pow( (1 - u), 2) );
+  }
+  if(k == 6){
+    return  (float) (7 * Math.pow(u, 6) * (1 - u) );
+  }
+  if(k == 7){
+    return  (float) (Math.pow(u, 7) );
+  }
+  return 0;
+}
+
+void bezier(int grade){
+  if( grade == 3){
+    for (float u = 0; u < 1; u = u + 0.01){
+        float x = points.get(0).x() * bez3(u, 0) +
+                   points.get(1).x() * bez3(u, 1)   + 
+                   points.get(2).x() * bez3(u, 2)  + 
+                   points.get(3).x() * bez3(u, 3);
+                   
+        float y = points.get(0).y() * bez3(u, 0) +
+                   points.get(1).y() * bez3(u, 1)   + 
+                   points.get(2).y() * bez3(u, 2)  + 
+                   points.get(3).y() * bez3(u, 3);
+                   
+        float z = points.get(0).z() * bez3(u, 0) +
+                   points.get(1).z() * bez3(u, 1)   + 
+                   points.get(2).z() * bez3(u, 2)  + 
+                   points.get(3).z() * bez3(u, 3);
+        
+        strokeWeight(3);
+        stroke(255,255,255);
+        point(x, y, z);
     }
-    return factorial;
-  }
-  
-  public float combinatorial(int n,int i){
-    return factorial(n)/(factorial(i) * factorial(n-i));
-  }
-  
-  public float bernstein(float t, int n, int i){
-    return combinatorial(n,i)*pow(t,i)*pow(1-t,n-i);
-  }
-  
-  public void bezier(){
-    int n = points.size();
-    Vector aux = null;
-    Vector current_point = points.get(0);
-    
-    for(float t=0; t<=1; t+=0.01){
-      aux = new Vector(0, 0, 0);
-      for (int i=0; i<n; i++){
-        aux.add(Vector.multiply(points.get(i),  bernstein(t,n,i)));
-      }
-      line(current_point.x(),current_point.y(),current_point.z(),aux.x(),aux.y(),aux.z());
-      current_point = aux;
+  }else{
+    for (float u = 0; u < 1; u = u + 0.01){
+        float x = points.get(0).x() * bez7(u, 0) +
+                  points.get(1).x() * bez7(u, 1) + 
+                  points.get(2).x() * bez7(u, 2) + 
+                  points.get(3).x() * bez7(u, 3) +
+                  points.get(4).x() * bez7(u, 4) +
+                  points.get(5).x() * bez7(u, 5) +
+                  points.get(6).x() * bez7(u, 6) +
+                  points.get(7).x() * bez7(u, 7);
+                  
+        float y = points.get(0).y() * bez7(u, 0) +
+                  points.get(1).y() * bez7(u, 1) + 
+                  points.get(2).y() * bez7(u, 2) + 
+                  points.get(3).y() * bez7(u, 3) +
+                  points.get(4).y() * bez7(u, 4) +
+                  points.get(5).y() * bez7(u, 5) +
+                  points.get(6).y() * bez7(u, 6) +
+                  points.get(7).y() * bez7(u, 7);
+                  
+        float z = points.get(0).z() * bez7(u, 0) +
+                  points.get(1).z() * bez7(u, 1) + 
+                  points.get(2).z() * bez7(u, 2) + 
+                  points.get(3).z() * bez7(u, 3) +
+                  points.get(4).z() * bez7(u, 4) +
+                  points.get(5).z() * bez7(u, 5) +
+                  points.get(6).z() * bez7(u, 6) +
+                  points.get(7).z() * bez7(u, 7);
+                  
+        
+        strokeWeight(3);
+        stroke(0,255,255);;
+        point(x, y, z);
     }
-  }
-  
-  private Vector tangent_point(int i) {
-    return Vector.multiply( Vector.subtract( points.get(i+1), points.get(i-1) ), 0.5 );
-  }
-  
-  public void hermite(){
+  } 
+}
+
+private Vector tangent_point(int i) {
+  return Vector.multiply( Vector.subtract( points.get(i+1), points.get(i-1) ), 0.5 );
+}
+
+public void hermite(){
   int n = points.size();
   Vector aux = null;
   Vector punto_actual = points.get(0);
   for (int i=1; i<n-2;i++){
     Vector P0 = points.get(i);
     Vector P1 = points.get(i+1);
-
+  
     punto_actual = P0;
     Vector m0= tangent_point(i);
     Vector m1= tangent_point(i+1); 
-
+  
     for(float t=0; t<=1; t+=0.01){  
       
       float h00 = 2*pow(t,3)-3*pow(t,2)+1;
       float h10 = pow(t,3)-2*pow(t,2)+t;
       float h01 = -2*pow(t,3)+3*pow(t,2);
       float h11 = pow(t,3)-pow(t,2);
-
+  
       Vector aux1 = Vector.add(Vector.multiply(P0, h00),Vector.multiply(m0, h10));
       Vector aux2 = Vector.add(Vector.multiply(P1, h01),Vector.multiply(m1, h11));
       aux = Vector.add(aux1, aux2);

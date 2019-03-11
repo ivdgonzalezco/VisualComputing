@@ -1,0 +1,5 @@
+Controller
+yMove	a	3	SLIDER	Y Axis	0	1.0	0.0
+xMove	a	3	SLIDER	X Axis	0	1.0	0.0
+xRot	a	3	SLIDER	X Rotation	0	1.0	0.0
+light	a	1	BUTTON	Button 5	0	0.0	0.0
